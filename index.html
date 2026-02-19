@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AniNoir - Твой личный аниме портал</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .anime-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .anime-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .anime-card:hover img { transform: scale(1.05); }
+        .anime-info {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);            padding: 15px;
+        }
+        .rating {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 12px 24px;
+            color: white;
+            width: 100%;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .nav-link {
+            color: #a0a0a0;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px auto;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+        .player-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }        .player-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            cursor: pointer;
+        }
+        .player-btn:hover, .player-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        .character-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .character-card:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+        .character-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            margin-bottom: 10px;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;            background: rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 3px;
+            color: #a0a0ff;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 25px;
+        }
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+        .watchlist-btn {
+            position: absolute;
+            top: 10px; left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .watchlist-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+        }
+        .notification.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .notification.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .anime-card img { height: 250px; }
+            .modal-content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50" style="background: rgba(15, 15, 26, 0.95);">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <a href="#" class="text-xl font-bold gradient-text">
+                    <i class="fas fa-play-circle mr-2"></i>AniNoir
+                </a>
+                <nav class="hidden md:flex gap-2">
+                    <a href="#" class="nav-link active" onclick="showSection('home')">Главная</a>
+                    <a href="#" class="nav-link" onclick="showSection('catalog')">Каталог</a>
+                    <a href="#" class="nav-link" onclick="showSection('characters')">Персонажи</a>
+                    <a href="#" class="nav-link" onclick="showSection('watchlist')">Избранное</a>
+                </nav>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск..." onkeyup="searchAnime()" style="max-width: 200px;">
+                    <div id="authSection">
+                        <button class="btn btn-primary" onclick="loginWithShikimori()">Войти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="pt-20 pb-10">
+        <!-- Hero -->
+        <section id="heroSection" class="container mx-auto px-4 mb-8">
+            <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);">
+                <div class="grid md:grid-cols-2 gap-4 p-4">
+                    <img src="https://desu.shikimori.one/uploads/poster/animes/5114/main_2x.jpg" alt="Featured" class="rounded-lg">
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-2xl font-bold mb-3 gradient-text">Добро пожаловать в AniNoir</h1>
+                        <p class="text-gray-300 mb-4 text-sm">Твой личный портал для просмотра аниме</p>
+                        <button class="btn btn-primary" onclick="loadFeaturedAnime()">
+                            <i class="fas fa-play mr-2"></i>Смотреть
+                        </button>                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Releases -->
+        <section id="newReleases" class="container mx-auto px-4 mb-8">
+            <h2 class="section-title gradient-text"><i class="fas fa-fire"></i>Новинки</h2>
+            <div id="newReleasesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Recommendations -->
+        <section id="recommendations" class="container mx-auto px-4 mb-8">
+            <h2 class="section-title gradient-text"><i class="fas fa-star"></i>Рекомендации</h2>
+            <div id="recommendationsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Characters -->
+        <section id="charactersSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-users"></i>Персонажи</h2>
+            <input type="text" id="characterSearch" class="search-input mb-4" placeholder="Имя персонажа..." onkeyup="searchCharacters()">
+            <div id="charactersGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+        </section>
+
+        <!-- Catalog -->
+        <section id="catalogSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-list"></i>Каталог</h2>
+            <div id="catalogGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Watchlist -->
+        <section id="watchlistSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-bookmark"></i>Избранное</h2>
+            <div id="watchlistGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"></div>
+        </section>
+    </main>
+
+    <!-- Anime Modal -->
+    <div id="animeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modalTitle" class="text-xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('animeModal')" class="text-gray-400 text-2xl"><i class="fas fa-times"></i></button>
+            </div>            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <img id="modalImage" src="" alt="Poster" class="rounded-lg w-full">
+                <div class="md:col-span-2">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span id="modalRating" class="rating"></span>
+                        <span id="modalYear" class="tag"></span>
+                        <span id="modalEpisodes" class="tag"></span>
+                    </div>
+                    <p id="modalDescription" class="text-gray-300 text-sm mb-3"></p>
+                    <div id="modalGenres" class="flex flex-wrap gap-2 mb-3"></div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h3 class="font-bold mb-3 gradient-text"><i class="fas fa-play-circle mr-2"></i>Плеер</h3>
+                <div class="player-selector">
+                    <button class="player-btn active" onclick="selectPlayer('kodik', this)">Kodik</button>
+                    <button class="player-btn" onclick="selectPlayer('abiboom', this)">AbiBoom</button>
+                    <button class="player-btn" onclick="selectPlayer('cvh', this)">CVH</button>
+                </div>
+                <select id="voiceoverSelect" class="search-input mb-3" onchange="changeVoiceover()">
+                    <option value="aniLibria">AniLibria</option>
+                    <option value="shiza">SHIZA</option>
+                    <option value="dreamcast">DreamCast</option>
+                    <option value="sub">Субтитры</option>
+                </select>
+                <select id="episodeSelect" class="search-input mb-3" onchange="changeEpisode()">
+                    <option value="1">Серия 1</option>
+                </select>
+                <div class="video-container">
+                    <iframe id="videoFrame" src="" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold mb-3 gradient-text"><i class="fas fa-users mr-2"></i>Персонажи</h3>
+                <div id="modalCharacters" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="charModalName" class="text-xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('characterModal')" class="text-gray-400 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+                <img id="charModalImage" src="" alt="Character" class="rounded-lg w-full">
+                <div class="md:col-span-2">
+                    <p id="charModalDescription" class="text-gray-300 text-sm"></p>                    <div id="charModalInfo" class="text-gray-400 text-sm mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 py-6 text-center text-gray-400 text-sm" style="background: rgba(15, 15, 26, 0.8);">
+        <p>© 2024 AniNoir. Для личного использования</p>
+        <p class="mt-2">Данные: Shikimori.one</p>
+    </footer>
+
+    <script>
+        // === КОНФИГУРАЦИЯ ===
+        const SHIKIMORI_CONFIG = {
+            clientId: 'p5_5PGdgNxquiliABA6rF6DVF_RUZHDBun1XaZz_DD0',
+            clientSecret: '1Lc6WPahO_Ky68bcyxpWzhYakPLCq8Lyq9ldcbS-NHw',
+            redirectUri: 'https://niktotch.github.io/AniNoir/callback.html',
+            scopes: 'user_rates'
+        };
+        const SHIKIMORI_API = 'https://shikimori.one/api';
+        
+        let accessToken = localStorage.getItem('shikimori_token');
+        let userProfile = null;
+        let currentAnime = null;
+        let currentPlayer = 'kodik';
+        let currentVoiceover = 'aniLibria';
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadNewReleases();
+            loadRecommendations();
+            loadCatalog();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (code) handleOAuthCallback(code);
+        });
+
+        // === OAUTH С ИСПОЛЬЗОВАНИЕМ FORMDATA ===
+        function loginWithShikimori() {
+            const authUrl = `https://shiki.one/oauth/authorize?client_id=${SHIKIMORI_CONFIG.clientId}&redirect_uri=${encodeURIComponent(SHIKIMORI_CONFIG.redirectUri)}&response_type=code&scope=${SHIKIMORI_CONFIG.scopes}`;
+            window.location.href = authUrl;
+        }
+
+        async function handleOAuthCallback(code) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showNotification('Получение токена...', 'success');
+                        try {
+                // ИСПОЛЬЗУЕМ FormData вместо JSON (как в официальном гайде)
+                const formData = new FormData();
+                formData.append('grant_type', 'authorization_code');
+                formData.append('client_id', SHIKIMORI_CONFIG.clientId);
+                formData.append('client_secret', SHIKIMORI_CONFIG.clientSecret);
+                formData.append('code', code);
+                formData.append('redirect_uri', SHIKIMORI_CONFIG.redirectUri);
+                
+                const response = await fetch('https://shiki.one/oauth/token', {
+                    method: 'POST',
+                    headers: {
+                        'User-Agent': 'AniNoir/1.0'
+                        // Content-Type НЕ указываем - браузер сам установит для FormData
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.access_token) {
+                    localStorage.setItem('shikimori_token', data.access_token);
+                    localStorage.setItem('shikimori_refresh', data.refresh_token || '');
+                    accessToken = data.access_token;
+                    await loadUserProfile();
+                    showNotification('Успешный вход!', 'success');
+                } else {
+                    throw new Error(data.error_description || data.error || 'Неизвестная ошибка');
+                }
+            } catch (error) {
+                console.error('OAuth error:', error);
+                showNotification('Ошибка: ' + error.message, 'error');
+            }
+        }
+
+        // === ОБНОВЛЕНИЕ ТОКЕНА ===
+        async function ensureValidToken() {
+            const refreshToken = localStorage.getItem('shikimori_refresh');
+            if (!refreshToken) return false;
+            
+            try {
+                const formData = new FormData();
+                formData.append('grant_type', 'refresh_token');
+                formData.append('client_id', SHIKIMORI_CONFIG.clientId);
+                formData.append('client_secret', SHIKIMORI_CONFIG.clientSecret);
+                formData.append('refresh_token', refreshToken);
+                
+                const response = await fetch('https://shiki.one/oauth/token', {
+                    method: 'POST',
+                    headers: { 'User-Agent': 'AniNoir/1.0' },                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.access_token) {
+                    localStorage.setItem('shikimori_token', data.access_token);
+                    if (data.refresh_token) {
+                        localStorage.setItem('shikimori_refresh', data.refresh_token);
+                    }
+                    accessToken = data.access_token;
+                    return true;
+                }
+            } catch (error) {
+                console.error('Token refresh error:', error);
+            }
+            return false;
+        }
+
+        async function checkAuthStatus() {
+            if (accessToken) {
+                await loadUserProfile();
+            }
+        }
+
+        async function loadUserProfile() {
+            try {
+                const response = await shikimoriRequest('/users/whoami');
+                userProfile = response;
+                updateAuthUI();
+            } catch (error) {
+                console.error('Profile error:', error);
+                // Пробуем обновить токен
+                const refreshed = await ensureValidToken();
+                if (refreshed) {
+                    await loadUserProfile();
+                } else {
+                    logout();
+                }
+            }
+        }
+
+        function updateAuthUI() {
+            const authSection = document.getElementById('authSection');
+            if (userProfile) {
+                authSection.innerHTML = `
+                    <div class="user-profile">
+                        <img src="${userProfile.avatar?.x48_url || ''}" class="user-avatar">
+                        <span class="text-white text-sm">${userProfile.nickname}</span>
+                        <button onclick="logout()" class="text-gray-400"><i class="fas fa-sign-out-alt"></i></button>                    </div>
+                `;
+            } else {
+                authSection.innerHTML = `<button class="btn btn-primary" onclick="loginWithShikimori()">Войти</button>`;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('shikimori_token');
+            localStorage.removeItem('shikimori_refresh');
+            accessToken = null;
+            userProfile = null;
+            updateAuthUI();
+            showNotification('Вы вышли из аккаунта', 'success');
+        }
+
+        // === API ЗАПРОСЫ С ОБРАБОТКОЙ 401 ===
+        async function shikimoriRequest(endpoint, options = {}) {
+            const headers = {
+                'User-Agent': 'AniNoir/1.0',
+                ...options.headers
+            };
+            
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+            
+            let response = await fetch(`${SHIKIMORI_API}${endpoint}`, {
+                ...options,
+                headers
+            });
+            
+            // Если токен истёк (401) - пробуем обновить
+            if (response.status === 401 && localStorage.getItem('shikimori_refresh')) {
+                const refreshed = await ensureValidToken();
+                if (refreshed) {
+                    headers['Authorization'] = `Bearer ${accessToken}`;
+                    response = await fetch(`${SHIKIMORI_API}${endpoint}`, {
+                        ...options,
+                        headers
+                    });
+                }
+            }
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    logout();
+                }
+                throw new Error(`API Error: ${response.status}`);
+            }            
+            return await response.json();
+        }
+
+        // === UI ФУНКЦИИ ===
+        function showSection(section) {
+            const sections = ['home', 'catalog', 'characters', 'watchlist'];
+            sections.forEach(s => {
+                const el = document.getElementById(s + 'Section');
+                if (el) el.classList.toggle('hidden', s !== section);
+            });
+            document.getElementById('heroSection').classList.toggle('hidden', section !== 'home');
+            document.getElementById('newReleases').classList.toggle('hidden', section !== 'home');
+            document.getElementById('recommendations').classList.toggle('hidden', section !== 'home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // === ЗАГРУЗКА ДАННЫХ ===
+        async function loadNewReleases() {
+            try {
+                const data = await shikimoriRequest('/animes?order=popularity&limit=10&status=ongoing');
+                renderAnimeGrid(data, 'newReleasesGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadRecommendations() {
+            try {
+                const data = await shikimoriRequest('/animes?order=rating&limit=10');
+                renderAnimeGrid(data, 'recommendationsGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadCatalog() {
+            try {
+                const data = await shikimoriRequest('/animes?order=popularity&limit=20');
+                renderAnimeGrid(data, 'catalogGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        function renderAnimeGrid(animeList, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';            animeList.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'anime-card card';
+                const rating = anime.score || 0;
+                const ratingColor = rating >= 7 ? 'bg-green-500' : rating >= 5 ? 'bg-yellow-500' : 'bg-red-500';
+                const isInWatchlist = isWatchlisted(anime.id);
+                card.innerHTML = `
+                    <button class="watchlist-btn ${isInWatchlist ? 'active' : ''}" onclick="toggleWatchlist(${anime.id}, this); event.stopPropagation();">
+                        <i class="fas fa-heart ${isInWatchlist ? 'text-white' : 'text-gray-400'}"></i>
+                    </button>
+                    <div class="relative">
+                        <img src="${anime.image?.original_url || ''}" alt="${anime.name}">
+                        <div class="absolute top-2 right-2 ${ratingColor} text-white px-2 py-1 rounded text-sm font-bold">${rating.toFixed(1)}</div>
+                        <div class="anime-info">
+                            <h3 class="text-white font-bold text-sm truncate">${anime.name}</h3>
+                            <p class="text-gray-300 text-xs">${anime.kind || 'TV'} • ${anime.episodes || '?'} эп.</p>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => showAnimeDetail(anime.id);
+                container.appendChild(card);
+            });
+        }
+
+        // === ИЗБРАННОЕ ===
+        function getWatchlist() { return JSON.parse(localStorage.getItem('watchlist') || '[]'); }
+        function isWatchlisted(animeId) { return getWatchlist().includes(animeId); }
+
+        function toggleWatchlist(animeId, btn) {
+            let watchlist = getWatchlist();
+            const index = watchlist.indexOf(animeId);
+            if (index > -1) {
+                watchlist.splice(index, 1);
+                btn.classList.remove('active');
+                btn.querySelector('i').classList.remove('text-white');
+                btn.querySelector('i').classList.add('text-gray-400');
+            } else {
+                watchlist.push(animeId);
+                btn.classList.add('active');
+                btn.querySelector('i').classList.remove('text-gray-400');
+                btn.querySelector('i').classList.add('text-white');
+            }
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+            loadWatchlist();
+        }
+
+        async function loadWatchlist() {
+            const ids = getWatchlist();
+            const container = document.getElementById('watchlistGrid');
+            if (ids.length === 0) {                container.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10"><i class="fas fa-bookmark text-4xl mb-4"></i><p>Пусто</p></div>';
+                return;
+            }
+            try {
+                const animes = await Promise.all(ids.map(id => shikimoriRequest(`/animes/${id}`)));
+                renderAnimeGrid(animes, 'watchlistGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        // === ПОИСК ===
+        async function searchAnime() {
+            const query = document.getElementById('searchInput').value;
+            if (query.length < 2) return;
+            try {
+                const data = await shikimoriRequest(`/animes?search=${encodeURIComponent(query)}&limit=10`);
+                renderAnimeGrid(data, 'newReleasesGrid');
+                showSection('home');
+            } catch (error) { console.error(error); }
+        }
+
+        async function searchCharacters() {
+            const query = document.getElementById('characterSearch').value;
+            if (query.length < 2) return;
+            const container = document.getElementById('charactersGrid');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            try {
+                const data = await shikimoriRequest(`/characters?search=${encodeURIComponent(query)}&limit=12`);
+                container.innerHTML = '';
+                data.forEach(char => {
+                    const card = document.createElement('div');
+                    card.className = 'character-card';
+                    card.innerHTML = `
+                        <img src="${char.image?.original_url || ''}" class="character-img">
+                        <h4 class="text-white font-bold text-sm">${char.name}</h4>
+                        <p class="text-gray-400 text-xs">${char.animes?.[0]?.name || ''}</p>
+                    `;
+                    card.onclick = () => showCharacterDetail(char.id);
+                    container.appendChild(card);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // === ДЕТАЛИ АНИМЕ ===
+        async function showAnimeDetail(animeId) {
+            try {
+                const anime = await shikimoriRequest(`/animes/${animeId}`);
+                currentAnime = anime;
+                document.getElementById('modalTitle').textContent = anime.name;
+                document.getElementById('modalImage').src = anime.image?.original_url || '';
+                document.getElementById('modalRating').textContent = `★ ${anime.score?.toFixed(1) || 'N/A'}`;                document.getElementById('modalYear').textContent = anime.started_on?.year || 'N/A';
+                document.getElementById('modalEpisodes').textContent = `${anime.episodes || '?'} эп.`;
+                document.getElementById('modalDescription').textContent = anime.description?.substring(0, 500) || 'Описание отсутствует';
+                
+                const genresContainer = document.getElementById('modalGenres');
+                genresContainer.innerHTML = '';
+                (anime.genres || []).forEach(genre => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = genre.name;
+                    genresContainer.appendChild(tag);
+                });
+
+                await loadAnimeCharacters(animeId);
+                setupEpisodes(anime.episodes || 12);
+                loadVideoPlayer();
+                document.getElementById('animeModal').classList.add('active');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadAnimeCharacters(animeId) {
+            try {
+                const data = await shikimoriRequest(`/animes/${animeId}/characters`);
+                const container = document.getElementById('modalCharacters');
+                container.innerHTML = '';
+                data.slice(0, 8).forEach(char => {
+                    const card = document.createElement('div');
+                    card.className = 'character-card';
+                    card.innerHTML = `
+                        <img src="${char.character.image?.original_url || ''}" class="character-img" style="width: 60px; height: 60px;">
+                        <h4 class="text-white font-bold text-xs">${char.character.name}</h4>
+                    `;
+                    card.onclick = () => showCharacterDetail(char.character.id);
+                    container.appendChild(card);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // === ДЕТАЛИ ПЕРСОНАЖА ===
+        async function showCharacterDetail(charId) {
+            try {
+                const char = await shikimoriRequest(`/characters/${charId}`);
+                document.getElementById('charModalName').textContent = char.name;
+                document.getElementById('charModalImage').src = char.image?.original_url || '';
+                document.getElementById('charModalDescription').textContent = char.description?.substring(0, 500) || 'Описание отсутствует';
+                document.getElementById('characterModal').classList.add('active');
+            } catch (error) { console.error(error); }
+        }
+
+        // === ПЛЕЕР ===        function setupEpisodes(total) {
+            const select = document.getElementById('episodeSelect');
+            select.innerHTML = '';
+            for (let i = 1; i <= Math.min(total, 100); i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Серия ${i}`;
+                select.appendChild(option);
+            }
+        }
+
+        function selectPlayer(player, btn) {
+            currentPlayer = player;
+            document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadVideoPlayer();
+        }
+
+        function changeVoiceover() {
+            currentVoiceover = document.getElementById('voiceoverSelect').value;
+            loadVideoPlayer();
+        }
+
+        function changeEpisode() { loadVideoPlayer(); }
+
+        function loadVideoPlayer() {
+            if (!currentAnime) return;
+            const episode = document.getElementById('episodeSelect').value;
+            let url = '';
+            switch(currentPlayer) {
+                case 'kodik': url = `https://kodik.cc/serial/${currentAnime.id}/${currentVoiceover}?episode=${episode}`; break;
+                case 'abiboom': url = `https://abiboom.ru/embed/${currentAnime.id}?ep=${episode}`; break;
+                case 'cvh': url = `https://cvh.cc/embed/${currentAnime.id}?ep=${episode}`; break;
+            }
+            document.getElementById('videoFrame').src = url || 'about:blank';
+        }
+
+        function loadFeaturedAnime() { showAnimeDetail(5114); }
+
+        // === МОДАЛКИ ===
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'animeModal') document.getElementById('videoFrame').src = '';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                document.getElementById('videoFrame').src = '';
+            }        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => modal.classList.remove('active'));
+                document.getElementById('videoFrame').src = '';
+            }
+        });
+    </script>
+</body>
+</html>            border-radius: 12px;
+            cursor: pointer;
+        }
+        .anime-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .anime-card:hover img { transform: scale(1.05); }
+        .anime-info {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);            padding: 15px;
+        }
+        .rating {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 12px 24px;
+            color: white;
+            width: 100%;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .nav-link {
+            color: #a0a0a0;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 20px auto;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+        }
+        .player-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }        .player-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            cursor: pointer;
+        }
+        .player-btn:hover, .player-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        .character-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .character-card:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+        .character-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            margin-bottom: 10px;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;            background: rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 3px;
+            color: #a0a0ff;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 25px;
+        }
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+        .watchlist-btn {
+            position: absolute;
+            top: 10px; left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .watchlist-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .notification {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+        }
+        .notification.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .notification.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .anime-card img { height: 250px; }
+            .modal-content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50" style="background: rgba(15, 15, 26, 0.95);">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <a href="#" class="text-xl font-bold gradient-text">
+                    <i class="fas fa-play-circle mr-2"></i>AniNoir
+                </a>
+                <nav class="hidden md:flex gap-2">
+                    <a href="#" class="nav-link active" onclick="showSection('home')">Главная</a>
+                    <a href="#" class="nav-link" onclick="showSection('catalog')">Каталог</a>
+                    <a href="#" class="nav-link" onclick="showSection('characters')">Персонажи</a>
+                    <a href="#" class="nav-link" onclick="showSection('watchlist')">Избранное</a>
+                </nav>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Поиск..." onkeyup="searchAnime()" style="max-width: 200px;">
+                    <div id="authSection">
+                        <button class="btn btn-primary" onclick="loginWithShikimori()">Войти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="pt-20 pb-10">
+        <!-- Hero -->
+        <section id="heroSection" class="container mx-auto px-4 mb-8">
+            <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);">
+                <div class="grid md:grid-cols-2 gap-4 p-4">
+                    <img src="https://desu.shikimori.one/uploads/poster/animes/5114/main_2x.jpg" alt="Featured" class="rounded-lg">
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-2xl font-bold mb-3 gradient-text">Добро пожаловать в AniNoir</h1>
+                        <p class="text-gray-300 mb-4 text-sm">Твой личный портал для просмотра аниме</p>
+                        <button class="btn btn-primary" onclick="loadFeaturedAnime()">
+                            <i class="fas fa-play mr-2"></i>Смотреть
+                        </button>                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Releases -->
+        <section id="newReleases" class="container mx-auto px-4 mb-8">
+            <h2 class="section-title gradient-text"><i class="fas fa-fire"></i>Новинки</h2>
+            <div id="newReleasesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Recommendations -->
+        <section id="recommendations" class="container mx-auto px-4 mb-8">
+            <h2 class="section-title gradient-text"><i class="fas fa-star"></i>Рекомендации</h2>
+            <div id="recommendationsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Characters -->
+        <section id="charactersSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-users"></i>Персонажи</h2>
+            <input type="text" id="characterSearch" class="search-input mb-4" placeholder="Имя персонажа..." onkeyup="searchCharacters()">
+            <div id="charactersGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+        </section>
+
+        <!-- Catalog -->
+        <section id="catalogSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-list"></i>Каталог</h2>
+            <div id="catalogGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="loading"><div class="spinner"></div></div>
+            </div>
+        </section>
+
+        <!-- Watchlist -->
+        <section id="watchlistSection" class="container mx-auto px-4 mb-8 hidden">
+            <h2 class="section-title gradient-text mb-4"><i class="fas fa-bookmark"></i>Избранное</h2>
+            <div id="watchlistGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"></div>
+        </section>
+    </main>
+
+    <!-- Anime Modal -->
+    <div id="animeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modalTitle" class="text-xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('animeModal')" class="text-gray-400 text-2xl"><i class="fas fa-times"></i></button>
+            </div>            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <img id="modalImage" src="" alt="Poster" class="rounded-lg w-full">
+                <div class="md:col-span-2">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span id="modalRating" class="rating"></span>
+                        <span id="modalYear" class="tag"></span>
+                        <span id="modalEpisodes" class="tag"></span>
+                    </div>
+                    <p id="modalDescription" class="text-gray-300 text-sm mb-3"></p>
+                    <div id="modalGenres" class="flex flex-wrap gap-2 mb-3"></div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h3 class="font-bold mb-3 gradient-text"><i class="fas fa-play-circle mr-2"></i>Плеер</h3>
+                <div class="player-selector">
+                    <button class="player-btn active" onclick="selectPlayer('kodik', this)">Kodik</button>
+                    <button class="player-btn" onclick="selectPlayer('abiboom', this)">AbiBoom</button>
+                    <button class="player-btn" onclick="selectPlayer('cvh', this)">CVH</button>
+                </div>
+                <select id="voiceoverSelect" class="search-input mb-3" onchange="changeVoiceover()">
+                    <option value="aniLibria">AniLibria</option>
+                    <option value="shiza">SHIZA</option>
+                    <option value="dreamcast">DreamCast</option>
+                    <option value="sub">Субтитры</option>
+                </select>
+                <select id="episodeSelect" class="search-input mb-3" onchange="changeEpisode()">
+                    <option value="1">Серия 1</option>
+                </select>
+                <div class="video-container">
+                    <iframe id="videoFrame" src="" allowfullscreen></iframe>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold mb-3 gradient-text"><i class="fas fa-users mr-2"></i>Персонажи</h3>
+                <div id="modalCharacters" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="charModalName" class="text-xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('characterModal')" class="text-gray-400 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4">
+                <img id="charModalImage" src="" alt="Character" class="rounded-lg w-full">
+                <div class="md:col-span-2">
+                    <p id="charModalDescription" class="text-gray-300 text-sm"></p>                    <div id="charModalInfo" class="text-gray-400 text-sm mt-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10 py-6 text-center text-gray-400 text-sm" style="background: rgba(15, 15, 26, 0.8);">
+        <p>© 2024 AniNoir. Для личного использования</p>
+        <p class="mt-2">Данные: Shikimori.one</p>
+    </footer>
+
+    <script>
+        // === КОНФИГУРАЦИЯ ===
+        const SHIKIMORI_CONFIG = {
+            clientId: 'p5_5PGdgNxquiliABA6rF6DVF_RUZHDBun1XaZz_DD0',
+            clientSecret: '1Lc6WPahO_Ky68bcyxpWzhYakPLCq8Lyq9ldcbS-NHw',
+            redirectUri: window.location.origin + '/aninoir/callback.html',
+            scopes: 'user_rates'
+        };
+        const SHIKIMORI_API = 'https://shikimori.one/api';
+        
+        let accessToken = localStorage.getItem('shikimori_token');
+        let userProfile = null;
+        let currentAnime = null;
+        let currentPlayer = 'kodik';
+        let currentVoiceover = 'aniLibria';
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuthStatus();
+            loadNewReleases();
+            loadRecommendations();
+            loadCatalog();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (code) handleOAuthCallback(code);
+        });
+
+        // === OAUTH ===
+        function loginWithShikimori() {
+            const authUrl = `https://shikimori.one/oauth/authorize?client_id=${SHIKIMORI_CONFIG.clientId}&redirect_uri=${encodeURIComponent(SHIKIMORI_CONFIG.redirectUri)}&response_type=code&scope=${SHIKIMORI_CONFIG.scopes}`;
+            window.location.href = authUrl;
+        }
+
+        async function handleOAuthCallback(code) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            try {
+                const response = await fetch('https://shikimori.one/oauth/token', {                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        code: code,
+                        client_id: SHIKIMORI_CONFIG.clientId,
+                        client_secret: SHIKIMORI_CONFIG.clientSecret,
+                        redirect_uri: SHIKIMORI_CONFIG.redirectUri,
+                        grant_type: 'authorization_code'
+                    })
+                });
+                const data = await response.json();
+                if (data.access_token) {
+                    localStorage.setItem('shikimori_token', data.access_token);
+                    accessToken = data.access_token;
+                    await loadUserProfile();
+                    showNotification('Успешный вход!', 'success');
+                }
+            } catch (error) {
+                showNotification('Ошибка авторизации', 'error');
+            }
+        }
+
+        async function checkAuthStatus() {
+            if (accessToken) await loadUserProfile();
+        }
+
+        async function loadUserProfile() {
+            try {
+                const response = await shikimoriRequest('/users/whoami');
+                userProfile = response;
+                updateAuthUI();
+            } catch (error) {
+                logout();
+            }
+        }
+
+        function updateAuthUI() {
+            const authSection = document.getElementById('authSection');
+            if (userProfile) {
+                authSection.innerHTML = `
+                    <div class="user-profile">
+                        <img src="${userProfile.avatar?.x48_url || ''}" class="user-avatar">
+                        <span class="text-white text-sm">${userProfile.nickname}</span>
+                        <button onclick="logout()" class="text-gray-400"><i class="fas fa-sign-out-alt"></i></button>
+                    </div>
+                `;
+            } else {
+                authSection.innerHTML = `<button class="btn btn-primary" onclick="loginWithShikimori()">Войти</button>`;
+            }
+        }
+        function logout() {
+            localStorage.removeItem('shikimori_token');
+            accessToken = null;
+            userProfile = null;
+            updateAuthUI();
+        }
+
+        // === API ===
+        async function shikimoriRequest(endpoint, options = {}) {
+            const headers = { 'User-Agent': 'AniNoir/1.0', ...options.headers };
+            if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+            const response = await fetch(`${SHIKIMORI_API}${endpoint}`, { ...options, headers });
+            if (!response.ok) {
+                if (response.status === 401) logout();
+                throw new Error(`API Error: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        // === UI ===
+        function showSection(section) {
+            const sections = ['home', 'catalog', 'characters', 'watchlist'];
+            sections.forEach(s => {
+                const el = document.getElementById(s + 'Section');
+                if (el) el.classList.toggle('hidden', s !== section);
+            });
+            document.getElementById('heroSection').classList.toggle('hidden', section !== 'home');
+            document.getElementById('newReleases').classList.toggle('hidden', section !== 'home');
+            document.getElementById('recommendations').classList.toggle('hidden', section !== 'home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // === ЗАГРУЗКА ДАННЫХ ===
+        async function loadNewReleases() {
+            try {
+                const data = await shikimoriRequest('/animes?order=popularity&limit=10&status=ongoing');
+                renderAnimeGrid(data, 'newReleasesGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadRecommendations() {            try {
+                const data = await shikimoriRequest('/animes?order=rating&limit=10');
+                renderAnimeGrid(data, 'recommendationsGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadCatalog() {
+            try {
+                const data = await shikimoriRequest('/animes?order=popularity&limit=20');
+                renderAnimeGrid(data, 'catalogGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        function renderAnimeGrid(animeList, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            animeList.forEach(anime => {
+                const card = document.createElement('div');
+                card.className = 'anime-card card';
+                const rating = anime.score || 0;
+                const ratingColor = rating >= 7 ? 'bg-green-500' : rating >= 5 ? 'bg-yellow-500' : 'bg-red-500';
+                const isInWatchlist = isWatchlisted(anime.id);
+                card.innerHTML = `
+                    <button class="watchlist-btn ${isInWatchlist ? 'active' : ''}" onclick="toggleWatchlist(${anime.id}, this); event.stopPropagation();">
+                        <i class="fas fa-heart ${isInWatchlist ? 'text-white' : 'text-gray-400'}"></i>
+                    </button>
+                    <div class="relative">
+                        <img src="${anime.image?.original_url || ''}" alt="${anime.name}">
+                        <div class="absolute top-2 right-2 ${ratingColor} text-white px-2 py-1 rounded text-sm font-bold">${rating.toFixed(1)}</div>
+                        <div class="anime-info">
+                            <h3 class="text-white font-bold text-sm truncate">${anime.name}</h3>
+                            <p class="text-gray-300 text-xs">${anime.kind || 'TV'} • ${anime.episodes || '?'} эп.</p>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => showAnimeDetail(anime.id);
+                container.appendChild(card);
+            });
+        }
+
+        // === ИЗБРАННОЕ ===
+        function getWatchlist() { return JSON.parse(localStorage.getItem('watchlist') || '[]'); }
+        function isWatchlisted(animeId) { return getWatchlist().includes(animeId); }
+
+        function toggleWatchlist(animeId, btn) {
+            let watchlist = getWatchlist();
+            const index = watchlist.indexOf(animeId);
+            if (index > -1) {
+                watchlist.splice(index, 1);
+                btn.classList.remove('active');                btn.querySelector('i').classList.remove('text-white');
+                btn.querySelector('i').classList.add('text-gray-400');
+            } else {
+                watchlist.push(animeId);
+                btn.classList.add('active');
+                btn.querySelector('i').classList.remove('text-gray-400');
+                btn.querySelector('i').classList.add('text-white');
+            }
+            localStorage.setItem('watchlist', JSON.stringify(watchlist));
+            loadWatchlist();
+        }
+
+        async function loadWatchlist() {
+            const ids = getWatchlist();
+            const container = document.getElementById('watchlistGrid');
+            if (ids.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-400 py-10"><i class="fas fa-bookmark text-4xl mb-4"></i><p>Пусто</p></div>';
+                return;
+            }
+            try {
+                const animes = await Promise.all(ids.map(id => shikimoriRequest(`/animes/${id}`)));
+                renderAnimeGrid(animes, 'watchlistGrid');
+            } catch (error) { console.error(error); }
+        }
+
+        // === ПОИСК ===
+        async function searchAnime() {
+            const query = document.getElementById('searchInput').value;
+            if (query.length < 2) return;
+            try {
+                const data = await shikimoriRequest(`/animes?search=${encodeURIComponent(query)}&limit=10`);
+                renderAnimeGrid(data, 'newReleasesGrid');
+                showSection('home');
+            } catch (error) { console.error(error); }
+        }
+
+        async function searchCharacters() {
+            const query = document.getElementById('characterSearch').value;
+            if (query.length < 2) return;
+            const container = document.getElementById('charactersGrid');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            try {
+                const data = await shikimoriRequest(`/characters?search=${encodeURIComponent(query)}&limit=12`);
+                container.innerHTML = '';
+                data.forEach(char => {
+                    const card = document.createElement('div');
+                    card.className = 'character-card';
+                    card.innerHTML = `
+                        <img src="${char.image?.original_url || ''}" class="character-img">
+                        <h4 class="text-white font-bold text-sm">${char.name}</h4>                        <p class="text-gray-400 text-xs">${char.animes?.[0]?.name || ''}</p>
+                    `;
+                    card.onclick = () => showCharacterDetail(char.id);
+                    container.appendChild(card);
+                });
+            } catch (error) { console.error(error); }
+        }
+
+        // === ДЕТАЛИ АНИМЕ ===
+        async function showAnimeDetail(animeId) {
+            try {
+                const anime = await shikimoriRequest(`/animes/${animeId}`);
+                currentAnime = anime;
+                document.getElementById('modalTitle').textContent = anime.name;
+                document.getElementById('modalImage').src = anime.image?.original_url || '';
+                document.getElementById('modalRating').textContent = `★ ${anime.score?.toFixed(1) || 'N/A'}`;
+                document.getElementById('modalYear').textContent = anime.started_on?.year || 'N/A';
+                document.getElementById('modalEpisodes').textContent = `${anime.episodes || '?'} эп.`;
+                document.getElementById('modalDescription').textContent = anime.description?.substring(0, 500) || 'Описание отсутствует';
+                
+                const genresContainer = document.getElementById('modalGenres');
+                genresContainer.innerHTML = '';
+                (anime.genres || []).forEach(genre => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag';
+                    tag.textContent = genre.name;
+                    genresContainer.appendChild(tag);
+                });
+
+                await loadAnimeCharacters(animeId);
+                setupEpisodes(anime.episodes || 12);
+                loadVideoPlayer();
+                document.getElementById('animeModal').classList.add('active');
+            } catch (error) { console.error(error); }
+        }
+
+        async function loadAnimeCharacters(animeId) {
+            try {
+                const data = await shikimoriRequest(`/animes/${animeId}/characters`);
+                const container = document.getElementById('modalCharacters');
+                container.innerHTML = '';
+                data.slice(0, 8).forEach(char => {
+                    const card = document.createElement('div');
+                    card.className = 'character-card';
+                    card.innerHTML = `
+                        <img src="${char.character.image?.original_url || ''}" class="character-img" style="width: 60px; height: 60px;">
+                        <h4 class="text-white font-bold text-xs">${char.character.name}</h4>
+                    `;
+                    card.onclick = () => showCharacterDetail(char.character.id);
+                    container.appendChild(card);                });
+            } catch (error) { console.error(error); }
+        }
+
+        // === ДЕТАЛИ ПЕРСОНАЖА ===
+        async function showCharacterDetail(charId) {
+            try {
+                const char = await shikimoriRequest(`/characters/${charId}`);
+                document.getElementById('charModalName').textContent = char.name;
+                document.getElementById('charModalImage').src = char.image?.original_url || '';
+                document.getElementById('charModalDescription').textContent = char.description?.substring(0, 500) || 'Описание отсутствует';
+                document.getElementById('characterModal').classList.add('active');
+            } catch (error) { console.error(error); }
+        }
+
+        // === ПЛЕЕР ===
+        function setupEpisodes(total) {
+            const select = document.getElementById('episodeSelect');
+            select.innerHTML = '';
+            for (let i = 1; i <= Math.min(total, 100); i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Серия ${i}`;
+                select.appendChild(option);
+            }
+        }
+
+        function selectPlayer(player, btn) {
+            currentPlayer = player;
+            document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            loadVideoPlayer();
+        }
+
+        function changeVoiceover() {
+            currentVoiceover = document.getElementById('voiceoverSelect').value;
+            loadVideoPlayer();
+        }
+
+        function changeEpisode() { loadVideoPlayer(); }
+
+        function loadVideoPlayer() {
+            if (!currentAnime) return;
+            const episode = document.getElementById('episodeSelect').value;
+            let url = '';
+            switch(currentPlayer) {
+                case 'kodik': url = `https://kodik.cc/serial/${currentAnime.id}/${currentVoiceover}?episode=${episode}`; break;
+                case 'abiboom': url = `https://abiboom.ru/embed/${currentAnime.id}?ep=${episode}`; break;
+                case 'cvh': url = `https://cvh.cc/embed/${currentAnime.id}?ep=${episode}`; break;
+            }            document.getElementById('videoFrame').src = url || 'about:blank';
+        }
+
+        function loadFeaturedAnime() { showAnimeDetail(5114); }
+
+        // === МОДАЛКИ ===
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            if (modalId === 'animeModal') document.getElementById('videoFrame').src = '';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                document.getElementById('videoFrame').src = '';
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => modal.classList.remove('active'));
+                document.getElementById('videoFrame').src = '';
+            }
+        });
+    </script>
+</body>
+</html>            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .anime-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;            cursor: pointer;
+        }
+        
+        .anime-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .anime-card:hover img {
+            transform: scale(1.05);
+        }
+        
+        .anime-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 15px;
+        }
+        
+        .rating {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .search-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 12px 24px;
+            color: white;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-link {
+            color: #a0a0a0;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);            z-index: 1000;
+            backdrop-filter: blur(5px);
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 20px auto;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .player-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .player-btn {
+            padding: 10px 20px;
+            border-radius: 8px;            border: 1px solid rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .player-btn:hover, .player-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+        
+        .character-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .character-card:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .character-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(102, 126, 234, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 3px;
+            color: #a0a0ff;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 25px;
+        }
+        
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .watchlist-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .watchlist-btn:hover, .watchlist-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .anime-card img {
+                height: 250px;
+            }
+            .modal-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-opacity-95 backdrop-blur-md" style="background: rgba(15, 15, 26, 0.95);">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between flex-wrap gap-4">                <div class="flex items-center gap-6">
+                    <a href="#" class="text-2xl font-bold gradient-text">
+                        <i class="fas fa-play-circle mr-2"></i>AniNoir
+                    </a>
+                    <nav class="hidden md:flex gap-2">
+                        <a href="#" class="nav-link active" onclick="showSection('home')">
+                            <i class="fas fa-home mr-1"></i>Главная
+                        </a>
+                        <a href="#" class="nav-link" onclick="showSection('catalog')">
+                            <i class="fas fa-list mr-1"></i>Каталог
+                        </a>
+                        <a href="#" class="nav-link" onclick="showSection('characters')">
+                            <i class="fas fa-users mr-1"></i>Персонажи
+                        </a>
+                        <a href="#" class="nav-link" onclick="showSection('watchlist')">
+                            <i class="fas fa-bookmark mr-1"></i>Избранное
+                        </a>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-4 flex-wrap">
+                    <div class="relative flex-1">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Поиск аниме..." onkeyup="searchAnime()">
+                        <i class="fas fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div id="authSection">
+                        <button class="btn btn-primary" onclick="loginWithShikimori()">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Войти
+                        </button>
+                    </div>
+                    <button class="md:hidden text-white text-2xl" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="fixed top-16 left-0 right-0 bg-opacity-95 backdrop-blur-md hidden z-40" style="background: rgba(15, 15, 26, 0.95);">
+        <div class="container mx-auto px-4 py-4">
+            <nav class="flex flex-col gap-2">
+                <a href="#" class="nav-link active" onclick="showSection('home'); toggleMobileMenu()">
+                    <i class="fas fa-home mr-2"></i>Главная
+                </a>
+                <a href="#" class="nav-link" onclick="showSection('catalog'); toggleMobileMenu()">
+                    <i class="fas fa-list mr-2"></i>Каталог
+                </a>
+                <a href="#" class="nav-link" onclick="showSection('characters'); toggleMobileMenu()">
+                    <i class="fas fa-users mr-2"></i>Персонажи
+                </a>                <a href="#" class="nav-link" onclick="showSection('watchlist'); toggleMobileMenu()">
+                    <i class="fas fa-bookmark mr-2"></i>Избранное
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-10">
+        <!-- Hero Section -->
+        <section id="heroSection" class="container mx-auto px-4 mb-12">
+            <div class="card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);">
+                <div class="grid md:grid-cols-2 gap-6 p-6">
+                    <div>
+                        <img src="https://desu.shikimori.one/uploads/poster/animes/5114/main_2x-95f234424c1f032f3bed8b0f72a0b3f6.jpg" alt="Featured" class="rounded-lg shadow-2xl">
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h1 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Добро пожаловать в AniNoir</h1>
+                        <p class="text-gray-300 mb-6">Твой личный портал для просмотра аниме с интеграцией Shikimori API. Новинки, рекомендации, персонажи и многое другое.</p>
+                        <div class="flex gap-4">
+                            <button class="btn btn-primary" onclick="loadFeaturedAnime()">
+                                <i class="fas fa-play mr-2"></i>Смотреть
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSection('catalog')">
+                                <i class="fas fa-list mr-2"></i>Каталог
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Releases -->
+        <section id="newReleases" class="container mx-auto px-4 mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="section-title gradient-text">
+                    <i class="fas fa-fire"></i>Новинки
+                </h2>
+                <button class="btn btn-secondary text-sm" onclick="loadNewReleases()">
+                    <i class="fas fa-sync mr-1"></i>Обновить
+                </button>
+            </div>
+            <div id="newReleasesGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations -->        <section id="recommendations" class="container mx-auto px-4 mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="section-title gradient-text">
+                    <i class="fas fa-star"></i>Рекомендации
+                </h2>
+                <button class="btn btn-secondary text-sm" onclick="loadRecommendations()">
+                    <i class="fas fa-sync mr-1"></i>Обновить
+                </button>
+            </div>
+            <div id="recommendationsGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Characters Search -->
+        <section id="charactersSection" class="container mx-auto px-4 mb-12 hidden">
+            <h2 class="section-title gradient-text mb-6">
+                <i class="fas fa-users"></i>Поиск персонажей
+            </h2>
+            <div class="mb-6">
+                <input type="text" id="characterSearch" class="search-input" placeholder="Введите имя персонажа..." onkeyup="searchCharacters()">
+            </div>
+            <div id="charactersGrid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="col-span-full text-center text-gray-400 py-10">
+                    <i class="fas fa-search text-4xl mb-4"></i>
+                    <p>Введите имя персонажа для поиска</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Catalog -->
+        <section id="catalogSection" class="container mx-auto px-4 mb-12 hidden">
+            <h2 class="section-title gradient-text mb-6">
+                <i class="fas fa-list"></i>Каталог аниме
+            </h2>
+            <div class="flex gap-4 mb-6 flex-wrap">
+                <select id="genreFilter" class="search-input" style="max-width: 200px;" onchange="filterCatalog()">
+                    <option value="">Все жанры</option>
+                    <option value="action">Экшен</option>
+                    <option value="adventure">Приключения</option>
+                    <option value="comedy">Комедия</option>
+                    <option value="drama">Драма</option>
+                    <option value="fantasy">Фэнтези</option>
+                    <option value="romance">Романтика</option>
+                    <option value="sci-fi">Фантастика</option>
+                </select>
+                <select id="yearFilter" class="search-input" style="max-width: 150px;" onchange="filterCatalog()">
+                    <option value="">Все годы</option>                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                    <option value="2021">2021</option>
+                </select>
+            </div>
+            <div id="catalogGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Watchlist -->
+        <section id="watchlistSection" class="container mx-auto px-4 mb-12 hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="section-title gradient-text">
+                    <i class="fas fa-bookmark"></i>Избранное
+                </h2>
+                <button class="btn btn-secondary text-sm" onclick="clearWatchlist()">
+                    <i class="fas fa-trash mr-1"></i>Очистить
+                </button>
+            </div>
+            <div id="watchlistGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="col-span-full text-center text-gray-400 py-10">
+                    <i class="fas fa-bookmark text-4xl mb-4"></i>
+                    <p>Ваше избранное пусто</p>
+                    <p class="text-sm mt-2">Добавляйте аниме через кнопку ♥</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Anime Detail Modal -->
+    <div id="animeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-6">
+                <h2 id="modalTitle" class="text-2xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('animeModal')" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <img id="modalImage" src="" alt="Poster" class="rounded-lg shadow-2xl w-full">
+                </div>
+                <div class="md:col-span-2">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span id="modalRating" class="rating"></span>                        <span id="modalYear" class="tag"></span>
+                        <span id="modalEpisodes" class="tag"></span>
+                        <span id="modalStatus" class="tag"></span>
+                    </div>
+                    <p id="modalDescription" class="text-gray-300 mb-4 leading-relaxed"></p>
+                    <div id="modalGenres" class="flex flex-wrap gap-2 mb-4"></div>
+                    <div id="modalStudios" class="text-gray-400 text-sm mb-4"></div>
+                    <a id="shikimoriLink" href="#" target="_blank" class="btn btn-secondary text-sm">
+                        <i class="fas fa-external-link-alt mr-2"></i>На Shikimori
+                    </a>
+                </div>
+            </div>
+
+            <!-- Video Player -->
+            <div class="mb-6">
+                <h3 class="text-xl font-bold mb-4 gradient-text">
+                    <i class="fas fa-play-circle mr-2"></i>Плеер
+                </h3>
+                <div class="player-selector">
+                    <button class="player-btn active" onclick="selectPlayer('kodik', this)">Kodik</button>
+                    <button class="player-btn" onclick="selectPlayer('abiboom', this)">AbiBoom</button>
+                    <button class="player-btn" onclick="selectPlayer('cvh', this)">CVH</button>
+                    <button class="player-btn" onclick="selectPlayer('alloha', this)">Alloha</button>
+                    <button class="player-btn" onclick="selectPlayer('hdvb', this)">HDVB</button>
+                </div>
+                <div class="flex gap-4 mb-4 flex-wrap">
+                    <select id="voiceoverSelect" class="search-input" style="max-width: 250px;" onchange="changeVoiceover()">
+                        <option value="aniLibria">AniLibria</option>
+                        <option value="shiza">SHIZA Project</option>
+                        <option value="dreamcast">DreamCast</option>
+                        <option value="animevost">AnimeVost</option>
+                        <option value="sub">Субтитры</option>
+                        <option value="original">Оригинал</option>
+                    </select>
+                    <select id="episodeSelect" class="search-input" style="max-width: 150px;" onchange="changeEpisode()">
+                        <option value="1">Серия 1</option>
+                    </select>
+                </div>
+                <div class="video-container">
+                    <iframe id="videoFrame" src="" allowfullscreen></iframe>
+                </div>
+                <p class="text-gray-400 text-sm mt-3">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Если плеер не работает, попробуйте другой источник или озвучку
+                </p>
+            </div>
+
+            <!-- Characters -->
+            <div class="mb-6">
+                <h3 class="text-xl font-bold mb-4 gradient-text">                    <i class="fas fa-users mr-2"></i>Персонажи
+                </h3>
+                <div id="modalCharacters" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-6">
+                <h2 id="charModalName" class="text-2xl font-bold gradient-text"></h2>
+                <button onclick="closeModal('characterModal')" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div>
+                    <img id="charModalImage" src="" alt="Character" class="rounded-lg shadow-2xl w-full">
+                </div>
+                <div class="md:col-span-2">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span id="charModalAnime" class="tag"></span>
+                        <span id="charModalRole" class="tag"></span>
+                    </div>
+                    <p id="charModalDescription" class="text-gray-300 mb-4 leading-relaxed"></p>
+                    <div id="charModalInfo" class="text-gray-400 text-sm"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-opacity-50 backdrop-blur-md mt-10" style="background: rgba(15, 15, 26, 0.8);">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold gradient-text mb-4">
+                        <i class="fas fa-play-circle mr-2"></i>AniNoir
+                    </h3>
+                    <p class="text-gray-400">Личный портал для просмотра аниме с Shikimori API</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Навигация</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white" onclick="showSection('home')">Главная</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showSection('catalog')">Каталог</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showSection('characters')">Персонажи</a></li>
+                        <li><a href="#" class="hover:text-white" onclick="showSection('watchlist')">Избранное</a></li>                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Источники</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><i class="fas fa-database mr-2"></i>Shikimori API</li>
+                        <li><i class="fas fa-video mr-2"></i>Kodik, AbiBoom, CVH</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400">
+                <p>&copy; 2024 AniNoir. Для личного использования</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+            </html></html>
